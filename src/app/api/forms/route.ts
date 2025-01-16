@@ -61,11 +61,10 @@ async function fetchFormResponses(formId: string) {
   return response.json()
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    // Get formId from query parameters
-    // const { searchParams } = new URL(request.url)
     const formId = FORMID;
+    console.log("FORM ID: ", formId);
 
     if (!formId) {
       return NextResponse.json(
@@ -75,6 +74,8 @@ export async function GET(request: Request) {
     }
 
     const formResponses = await fetchFormResponses(formId)
+
+    console.log("Form Responses:", formResponses);
 
     // Optional: Add basic response transformation here
     const transformedResponses = formResponses.value.map((response: FormResponse) => ({
