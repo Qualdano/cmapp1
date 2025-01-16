@@ -53,6 +53,7 @@ async function fetchFormResponses(formId: string) {
       }
     }
   )
+  console.log("RES: ", response);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch form responses: ${response.statusText}`)
