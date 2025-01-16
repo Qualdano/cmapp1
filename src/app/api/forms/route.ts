@@ -42,11 +42,11 @@ async function getAccessToken() {
   }
 }
 
-async function fetchFormResponses(formId: string) {
+async function listAllForms() {
   const accessToken = await getAccessToken()
   
   const response = await fetch(
-    `https://graph.microsoft.com/v1.0/organization/settings/form/forms/${formId}/responses`,
+    'https://graph.microsoft.com/v1.0/organization/settings/forms',
     {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -54,7 +54,31 @@ async function fetchFormResponses(formId: string) {
       }
     }
   )
-  console.log("RES: ", response);
+  console.log("LIST FORMS RES: ", response);
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('List forms error response:', errorText)
+    throw new Error(`Failed to list forms: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+async function fetchFormResponses(formId: string) {
+  const accessToken = await getAccessToken()
+  
+  // Using a different URL format based on the API documentation
+  const response = await fetch(
+    `https://graph.microsoft.com/v1.0/organization/settings/forms/${formId}/responses`,
+    {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+  console.log("FETCH RESPONSES RES: ", response);
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -77,6 +101,11 @@ export async function GET() {
       )
     }
 
+    // First, let's see what forms are available
+    console.log("Fetching list of forms...")
+    const formsList = await listAllForms()
+    console.log("Available forms:", formsList)
+
     const formResponses = await fetchFormResponses(formId)
     console.log("Form Responses:", formResponses);
 
@@ -91,7 +120,10 @@ export async function GET() {
   } catch (error) {
     console.error('Forms API Error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch form responses' },
+      { 
+        error: 'Failed to fetch form responses',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
